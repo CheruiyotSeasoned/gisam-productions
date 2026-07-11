@@ -25,7 +25,8 @@ const MPESA_HINTS: Record<string, string> = {
   mpesa_consumer_key: "From your Daraja app.",
   mpesa_consumer_secret: "Encrypted at rest. Leave blank to keep the current value.",
   mpesa_passkey: "Lipa na M-Pesa Online passkey. Encrypted; leave blank to keep.",
-  mpesa_shortcode: "Your Paybill or Till number (business shortcode).",
+  mpesa_shortcode: "Paybill → your Paybill number. Buy Goods → your STORE / Head-Office number (not the till).",
+  mpesa_till_number: "Buy Goods ONLY → your Till number. Leave blank for Paybill.",
   mpesa_callback_url: "Public HTTPS URL ending in /api/payments/callback.",
   mpesa_account_ref: "Account reference shown on the STK prompt.",
 };
