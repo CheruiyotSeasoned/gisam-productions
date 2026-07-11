@@ -1,0 +1,159 @@
+"use client";
+
+import Link from "next/link";
+import Countdown from "./Countdown";
+import Icon from "@/components/Icon";
+import type { SiteContent } from "@/lib/types";
+
+// Placeholder event imagery — override from Admin → CMS Content → "hero" block
+// with data.image (stage/crowd) and data.portrait (a vocalist) when real
+// Big-Sam photos are available.
+const DEFAULT_EVENT_IMG = "/images/highlight/slide-1.png";
+const DEFAULT_PORTRAIT_IMG = "/images/ThumbnailSlider/Slider_1.jpg";
+
+export default function Hero({ site }: { site: SiteContent }) {
+  const s = site.settings;
+  const hero = site.content?.hero;
+  const eyebrow = hero?.data?.badge || `Auditions · ${formatDate(s.event_date)}`;
+  const title = hero?.title || s.event_name;
+  const subtitle = hero?.body || s.event_tagline;
+  const eventImg = hero?.data?.image || DEFAULT_EVENT_IMG;
+  const portraitImg = hero?.data?.portrait || DEFAULT_PORTRAIT_IMG;
+  const gateOpen = site.app_open?.open;
+
+  return (
+    <section className="relative overflow-hidden bg-gradient-to-b from-IcyBreeze to-white dark:from-darkmode dark:to-darkmode pt-32 pb-16 lg:pt-40 lg:pb-24">
+      <div className="container">
+        <div className="grid lg:grid-cols-12 grid-cols-1 items-center gap-30">
+          {/* Left — copy */}
+          <div className="lg:col-span-6">
+            <p
+              data-aos="fade-up"
+              data-aos-delay="150"
+              data-aos-duration="1000"
+              className="relative z-0 inline-flex items-center gap-2 text-primary text-lg font-bold before:absolute before:content-[''] before:bg-primary/20 before:w-full before:h-2 before:-z-1 before:bottom-1"
+            >
+              <Icon name="mic" size={20} /> {eyebrow}
+            </p>
+
+            <h1 data-aos="fade-up" data-aos-delay="250" data-aos-duration="1000" className="py-4">
+              {title}
+            </h1>
+
+            <p
+              data-aos="fade-up"
+              data-aos-delay="350"
+              data-aos-duration="1000"
+              className="text-xl text-SlateBlueText dark:text-white/70 font-normal max-w-506 md:pb-10 pb-6"
+            >
+              {subtitle}
+            </p>
+
+            <div
+              data-aos="fade-up"
+              data-aos-delay="450"
+              data-aos-duration="1000"
+              className="flex items-center flex-wrap gap-4 mb-10"
+            >
+              {gateOpen ? (
+                <Link href="/apply" className="btn btn-1 hover-filled-slide-down rounded-lg overflow-hidden">
+                  <span className="!flex !items-center gap-2">
+                    <Icon name="music" size={20} /> Apply Now — {s.fee_currency} {s.fee_amount}
+                  </span>
+                </Link>
+              ) : (
+                <span className="btn_primary opacity-60 cursor-not-allowed">Applications Closed</span>
+              )}
+              <Link href="/how-to-enter" className="btn_outline btn-2 hover-outline-slide-down group rounded-lg">
+                <span className="!flex !items-center gap-2">How it works</span>
+              </Link>
+            </div>
+
+            <div data-aos="fade-up" data-aos-delay="550" data-aos-duration="1000">
+              <p className="text-sm font-semibold text-MistyTealText mb-3 uppercase tracking-wide">
+                Auditions begin in
+              </p>
+              <Countdown date={s.event_date} theme="light" />
+            </div>
+          </div>
+
+          {/* Right — event imagery composition */}
+          <div
+            data-aos="fade-left"
+            data-aos-delay="200"
+            data-aos-duration="1000"
+            className="lg:col-span-6 relative lg:block hidden"
+          >
+            {/* Main stage / crowd image */}
+            <div className="relative rounded-tl-166 rounded-br-166 overflow-hidden shadow-hero-box aspect-[5/4]">
+              <img src={eventImg} alt="Live Big-Sam audition event" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-secondary/70 via-secondary/10 to-transparent" />
+
+              {/* Live badge */}
+              <div className="absolute top-5 left-5 flex items-center gap-2 bg-white/90 backdrop-blur rounded-full py-1.5 px-3 shadow-round-box">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+                <span className="text-sm font-bold text-secondary">Live Auditions</span>
+              </div>
+
+              {/* Bottom caption */}
+              <div className="absolute bottom-5 left-6 right-6 text-white">
+                <p className="text-lg font-extrabold drop-shadow">{s.event_city}</p>
+                <p className="text-sm text-white/80">{formatDate(s.event_date)}</p>
+              </div>
+            </div>
+
+            {/* Overlapping vocalist portrait */}
+            <div className="absolute -bottom-8 -left-8 w-40 xl:w-44 rounded-22 overflow-hidden border-4 border-white dark:border-darkmode shadow-hero-box hidden xl:block">
+              <img src={portraitImg} alt="Big-Sam vocalist" className="w-full h-56 object-cover" />
+            </div>
+
+            {/* Floating prize card */}
+            <div className="absolute top-14 -right-5 bg-LightYellow rounded-22 shadow-hero-box py-3 px-5">
+              <p className="text-lg font-extrabold text-secondary flex items-center gap-2">
+                <Icon name="trophy" size={20} /> 1st Prize
+              </p>
+              <p className="text-base font-semibold text-secondary text-center">
+                {s.fee_currency} {Number(s.prize_1).toLocaleString()}
+              </p>
+            </div>
+
+            {/* Floating top-N card */}
+            <div className="absolute bottom-16 -right-4 bg-Aquamarine rounded-22 shadow-hero-box py-2.5 px-4 hidden xl:block">
+              <p className="text-base font-extrabold text-green-900 flex items-center gap-2">
+                <Icon name="star" size={18} /> Top {s.top_n_recruited}
+              </p>
+              <p className="text-xs font-semibold text-green-900 text-center">Join the team</p>
+            </div>
+          </div>
+
+          {/* Mobile event image */}
+          <div className="lg:hidden relative rounded-22 overflow-hidden shadow-hero-box aspect-[16/10]" data-aos="fade-up">
+            <img src={eventImg} alt="Live Big-Sam audition event" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-secondary/70 to-transparent" />
+            <div className="absolute top-4 left-4 flex items-center gap-2 bg-white/90 rounded-full py-1 px-3">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+              <span className="text-xs font-bold text-secondary">Live Auditions</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Event meta strip */}
+        <div
+          data-aos="fade-up"
+          data-aos-delay="300"
+          className="mt-16 lg:mt-14 flex flex-wrap items-center gap-x-8 gap-y-3 text-SlateBlueText dark:text-white/70"
+        >
+          <span className="flex items-center gap-2"><Icon name="map-pin" size={18} className="text-primary" /> {s.event_venue}</span>
+          <span className="flex items-center gap-2"><Icon name="calendar" size={18} className="text-primary" /> {formatDate(s.event_date)}</span>
+          <span className="flex items-center gap-2"><Icon name="ticket" size={18} className="text-primary" /> Entry fee {s.fee_currency} {s.fee_amount} via M-Pesa</span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function formatDate(d: string) {
+  const date = new Date(d.replace(" ", "T"));
+  if (isNaN(date.getTime())) return d;
+  return date.toLocaleDateString("en-KE", { day: "numeric", month: "long", year: "numeric" });
+}
