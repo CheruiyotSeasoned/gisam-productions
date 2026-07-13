@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSiteContent } from "@/lib/useSiteContent";
 import { apiPostForm, apiGet, apiPost } from "@/lib/api";
@@ -22,6 +22,17 @@ export default function ApplyPage() {
   const [reference, setReference] = useState<string>("");
   const [statusMsg, setStatusMsg] = useState("Sending payment request…");
   const [clipMode, setClipMode] = useState<"link" | "upload">("link");
+
+  // Money is involved, so don't rely on a disabled button alone: React state is
+  // async, and a fast double-tap (or Enter held down) can fire submit twice before
+  // the re-render lands. A ref flips synchronously, so the second call is dropped.
+  const inFlight = useRef(false);
+  // Identifies the current poll loop; a retry bumps it so the previous loop exits
+  // instead of two loops racing to set the phase.
+  const pollRun = useRef(0);
+
+  // Never leave a timer running after the user navigates away.
+  useEffect(() => () => { pollRun.current += 1; }, []);
 
   const s = data?.settings;
   const gate = data?.app_open;
@@ -46,6 +57,8 @@ export default function ApplyPage() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (inFlight.current) return; // a submit is already on its way — never send a second
+    inFlight.current = true;
     setSubmitting(true);
     setErrors({});
     setTopError(null);
@@ -54,8 +67,13 @@ export default function ApplyPage() {
     if (clipMode === "link") form.delete("clip_file");
     else form.delete("clip_url");
 
-    const res = await apiPostForm("/api/applications", form);
-    setSubmitting(false);
+    let res;
+    try {
+      res = await apiPostForm("/api/applications", form);
+    } finally {
+      inFlight.current = false;
+      setSubmitting(false);
+    }
 
     if (!res.ok) {
       setErrors(res.errors || {});
@@ -69,23 +87,36 @@ export default function ApplyPage() {
 
     if (res.data?.payment?.success) {
       setPhase("paying");
-      setStatusMsg("Check your phone and enter your M-Pesa PIN.");
-      pollStatus(ref);
+      setStatusMsg(res.data.payment.message || "Check your phone and enter your M-Pesa PIN.");
+      startPolling(ref);
     } else {
       // Application saved but STK didn't start (e.g. gateway not live yet).
       setPhase("failed");
-      setStatusMsg(res.data?.payment?.message || "We couldn't start the payment. You can retry from your status page.");
+      setStatusMsg(res.data?.payment?.message || "We couldn't start the payment. You can retry below.");
     }
   }
 
-  function pollStatus(ref: string, attempts = 0) {
+  /** Begin a fresh poll loop, retiring any loop still running. */
+  function startPolling(ref: string) {
+    pollRun.current += 1;
+    pollStatus(ref, pollRun.current, 0);
+  }
+
+  function pollStatus(ref: string, run: number, attempts: number) {
+    // A newer loop (or an unmount) superseded this one.
+    if (run !== pollRun.current) return;
+
     if (attempts > 40) {
       setPhase("failed");
-      setStatusMsg("We didn't receive payment confirmation in time. You can retry below.");
+      setStatusMsg("We didn't get a payment confirmation in time. If you were charged, do NOT pay again — check your status page in a minute.");
       return;
     }
+
     setTimeout(async () => {
+      if (run !== pollRun.current) return;
       const res = await apiGet(`/api/payments/status/${ref}`);
+      if (run !== pollRun.current) return;
+
       const ps = res.data?.payment_status;
       if (res.data?.paid) {
         setPhase("success");
@@ -93,21 +124,29 @@ export default function ApplyPage() {
         setPhase("failed");
         setStatusMsg(ps === "cancelled" ? "The payment prompt was cancelled." : "The payment failed. Please retry.");
       } else {
-        pollStatus(ref, attempts + 1);
+        pollStatus(ref, run, attempts + 1);
       }
     }, 4000);
   }
 
   async function retry() {
+    if (inFlight.current) return; // one retry at a time — two would mean two prompts
+    inFlight.current = true;
     setPhase("paying");
     setStatusMsg("Re-sending payment request…");
-    const res = await apiPost("/api/payments/retry", { reference });
-    if (res.ok) {
-      setStatusMsg("Check your phone and enter your M-Pesa PIN.");
-      pollStatus(reference);
-    } else {
-      setPhase("failed");
-      setStatusMsg(res.message || "Could not restart payment.");
+    try {
+      const res = await apiPost("/api/payments/retry", { reference });
+      if (res.ok) {
+        // The backend hands back the prompt already on the phone rather than sending
+        // a second one, and says so — surface its message rather than assuming.
+        setStatusMsg(res.message || "Check your phone and enter your M-Pesa PIN.");
+        startPolling(reference);
+      } else {
+        setPhase("failed");
+        setStatusMsg(res.message || "Could not restart the payment.");
+      }
+    } finally {
+      inFlight.current = false;
     }
   }
 
@@ -122,6 +161,9 @@ export default function ApplyPage() {
               <h3 className="text-xl font-bold text-secondary mb-2">Awaiting payment</h3>
               <p className="text-SlateBlueText">{statusMsg}</p>
               <p className="text-sm text-CadetBlue mt-4">Reference: <strong>{reference}</strong></p>
+              <p className="mt-4 text-xs text-MistyTealText">
+                Keep this page open. Don&apos;t pay twice — if the prompt doesn&apos;t appear, wait for it to time out and retry.
+              </p>
             </>
           )}
           {phase === "success" && (
@@ -143,9 +185,12 @@ export default function ApplyPage() {
               <p className="text-SlateBlueText">{statusMsg}</p>
               {reference && <p className="text-sm text-CadetBlue mt-3">Reference: <strong>{reference}</strong></p>}
               <div className="flex gap-3 justify-center mt-6">
-                <button onClick={retry} className="btn_primary">Retry payment</button>
+                <button onClick={retry} disabled={submitting} className="btn_primary disabled:opacity-60">Retry payment</button>
                 <Link href="/status" className="px-6 py-3 rounded-lg border border-primary text-primary font-semibold">Check status</Link>
               </div>
+              <p className="mt-4 text-xs text-MistyTealText">
+                If money already left your account, do not retry — use <strong>Check status</strong>.
+              </p>
             </>
           )}
         </div>

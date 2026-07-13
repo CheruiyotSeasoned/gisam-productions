@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { apiPost, apiGet } from "@/lib/api";
 
 export default function StatusPage() {
@@ -9,6 +9,8 @@ export default function StatusPage() {
   const [result, setResult] = useState<any>(null);
   const [retrying, setRetrying] = useState(false);
   const [note, setNote] = useState<string | null>(null);
+  // Synchronous guard — React state updates too late to stop a fast double-tap.
+  const retryInFlight = useRef(false);
 
   async function check(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -27,13 +29,17 @@ export default function StatusPage() {
   }
 
   async function retryPayment() {
-    if (!result) return;
+    if (!result || retryInFlight.current) return; // never fire two prompts
+    retryInFlight.current = true;
     setRetrying(true);
     setNote(null);
     const res = await apiPost("/api/payments/retry", { reference: result.reference });
     setRetrying(false);
+    retryInFlight.current = false;
     if (res.ok) {
-      setNote("Payment prompt sent — check your phone. Refresh in a moment to see the update.");
+      // The server may report that a prompt is already live and it declined to send a
+      // second one — say what actually happened rather than claiming a new prompt.
+      setNote(res.message || "Payment prompt sent — check your phone.");
       // Poll a few times.
       let n = 0;
       const id = setInterval(async () => {
