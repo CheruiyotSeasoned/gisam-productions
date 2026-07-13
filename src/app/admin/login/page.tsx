@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { apiPost, setToken, getToken } from "@/lib/api";
+import Wordmark from "@/components/BigSam/Wordmark";
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -35,9 +36,11 @@ export default function AdminLogin() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary to-primary p-4">
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-2xl p-8">
         <div className="text-center mb-6">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white font-black text-xl mb-2">B</div>
-          <h1 className="text-xl font-extrabold text-secondary">BIG-SAM Admin</h1>
-          <p className="text-sm text-slate-400">Sign in to continue</p>
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white font-black text-xl mb-3">B</div>
+          <div className="flex justify-center">
+            <Wordmark tag="Admin" />
+          </div>
+          <p className="text-sm text-slate-400 mt-2">Sign in to continue</p>
         </div>
         {error && <div className="mb-4 bg-red-50 text-red-700 px-4 py-2 rounded-lg text-sm">{error}</div>}
         <form onSubmit={submit} className="space-y-4">

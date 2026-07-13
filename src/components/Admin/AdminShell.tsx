@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAdminGuard, adminLogout, AdminUser } from "@/lib/adminAuth";
 import Icon, { IconName } from "@/components/Icon";
+import Wordmark from "@/components/BigSam/Wordmark";
 
 const NAV: { href: string; label: string; icon: IconName; exact?: boolean; adminOnly?: boolean }[] = [
   { href: "/admin", label: "Dashboard", icon: "dashboard", exact: true },
@@ -50,12 +51,10 @@ export default function AdminShell({ children }: { children: (user: AdminUser) =
   const sidebar = (
     <>
       <div className="p-5 border-b border-white/10 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary font-black">B</span>
-          <div>
-            <div className="font-extrabold leading-none">BIG-SAM</div>
-            <div className="text-xs text-white/50">Admin</div>
-          </div>
+        <div className="flex items-center gap-2.5">
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary font-black shrink-0">B</span>
+          {/* Same wordmark as the public site, on a dark surface, tagged "Admin". */}
+          <Wordmark tone="dark" tag="Admin" />
         </div>
         <button
           onClick={() => setMenuOpen(false)}
@@ -122,7 +121,9 @@ export default function AdminShell({ children }: { children: (user: AdminUser) =
             <span className="block w-5 h-0.5 bg-current mt-1" />
           </button>
 
-          <span className="md:hidden font-bold text-secondary">BIG-SAM</span>
+          <span className="md:hidden">
+            <Wordmark tag="Admin" />
+          </span>
 
           <div className="ml-auto flex items-center gap-2 sm:gap-4">
             {/* The name is noise on a narrow screen — the role tag carries the meaning. */}

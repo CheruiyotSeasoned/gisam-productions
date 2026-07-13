@@ -8,21 +8,25 @@ import MediaLibrary from "@/components/Admin/MediaLibrary";
 import Branding from "@/components/Admin/Branding";
 import SiteImages from "@/components/Admin/SiteImages";
 import Moments from "@/components/Admin/Moments";
+import AboutSection from "@/components/Admin/AboutSection";
+import Services from "@/components/Admin/Services";
 
-type Tab = "blocks" | "images" | "moments" | "faqs" | "media" | "branding";
+type Tab = "blocks" | "about" | "services" | "images" | "moments" | "faqs" | "media" | "branding";
 
 export default function AdminContent() {
   return <AdminShell>{() => <ContentBody />}</AdminShell>;
 }
 
 function ContentBody() {
-  const [tab, setTab] = useState<Tab>("blocks");
+  const [tab, setTab] = useState<Tab>("about");
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
   const tabs: { id: Tab; label: string }[] = [
-    { id: "blocks", label: "Page content" },
-    { id: "images", label: "Site Images" },
+    { id: "about", label: "About" },
+    { id: "services", label: "Services & Packages" },
     { id: "moments", label: "Moments (TikTok)" },
+    { id: "images", label: "Site Images" },
     { id: "faqs", label: "FAQs" },
+    { id: "blocks", label: "Page content" },
     { id: "media", label: "Media library" },
     { id: "branding", label: "Logo & Branding" },
   ];
@@ -38,6 +42,8 @@ function ContentBody() {
         </div>
       </div>
       {tab === "blocks" && <Blocks notify={setToast} />}
+      {tab === "about" && <AboutSection notify={setToast} />}
+      {tab === "services" && <Services notify={setToast} />}
       {tab === "images" && <SiteImages notify={setToast} />}
       {tab === "moments" && <Moments notify={setToast} />}
       {tab === "faqs" && <Faqs notify={setToast} />}

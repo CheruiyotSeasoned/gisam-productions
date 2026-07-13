@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import type { SiteContent } from "@/lib/types";
+import type { SiteContent, ServiceItem } from "@/lib/types";
 import { apiGet } from "@/lib/api";
 import { tiktokId, tiktokEmbedUrl, type Moment } from "@/lib/tiktok";
+import { resolveVideo } from "@/lib/video";
 import Icon, { IconName } from "@/components/Icon";
 
 /* ------------------------------ Prizes ------------------------------ */
@@ -113,23 +114,47 @@ export function HowToEnter({ site }: { site: SiteContent }) {
 export function About({ site }: { site: SiteContent }) {
   const c = site.content?.about;
   if (!c) return null;
-  const videos: string[] = c.data?.videos || [];
+
+  // `video` is the field the admin manages. `videos[]` is the older shape — still
+  // honoured so existing content keeps working.
+  const videoUrl: string = c.data?.video || c.data?.videos?.[0] || "";
+  const video = resolveVideo(videoUrl);
   const aboutImage: string = c.data?.image || "/images/highlight/slide-1.png";
+  const tagline: string = c.data?.tagline || "";
+
   return (
     <section className="bg-secondary text-white">
       <div className="container">
         <div className="grid md:grid-cols-2 gap-10 items-center">
           <div>
+            {tagline && (
+              <p className="text-primary font-bold uppercase tracking-wide text-sm mb-2">{tagline}</p>
+            )}
             <h2 className="!text-white text-white">{c.title}</h2>
-            <p className="text-white/80 mt-4 text-lg">{c.body}</p>
+            <p className="text-white/80 mt-4 text-lg whitespace-pre-line">{c.body}</p>
+            <Link href="/services" className="inline-flex items-center gap-2 mt-6 font-semibold text-white hover:text-primary transition">
+              See what we do <Icon name="arrow-right" size={18} />
+            </Link>
           </div>
-          <div className="grid grid-cols-1 gap-4">
-            {videos.length > 0 ? (
-              videos.slice(0, 1).map((v, i) => (
-                <div key={i} className="aspect-video rounded-22 overflow-hidden shadow-hero-box">
-                  <iframe className="w-full h-full" src={toEmbed(v)} allowFullScreen title="Big-Sam performance" />
-                </div>
-              ))
+
+          <div>
+            {video ? (
+              // TikTok is portrait, YouTube landscape — frame each in its own ratio
+              // so the player isn't letterboxed or cropped.
+              <div
+                className={`rounded-22 overflow-hidden shadow-hero-box mx-auto ${
+                  video.portrait ? "max-w-[325px] bg-black" : "w-full aspect-video"
+                }`}
+              >
+                <iframe
+                  src={video.embedUrl}
+                  title={c.title || "Big-Sam"}
+                  loading="lazy"
+                  allow="encrypted-media; picture-in-picture; fullscreen"
+                  allowFullScreen
+                  className={`w-full border-0 block ${video.portrait ? "h-[580px]" : "h-full"}`}
+                />
+              </div>
             ) : (
               <div className="relative aspect-video rounded-22 overflow-hidden shadow-hero-box">
                 <img src={aboutImage} alt="Big-Sam performance" className="w-full h-full object-cover" />
@@ -274,7 +299,57 @@ export function FinalCTA({ site }: { site: SiteContent }) {
   );
 }
 
-function toEmbed(url: string) {
-  const m = url.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{6,})/);
-  return m ? `https://www.youtube.com/embed/${m[1]}` : url;
+/* --------------------------- Services teaser ------------------------ */
+/**
+ * Homepage teaser for the production business — the first few services, linking
+ * through to /services for the full list and package pricing.
+ */
+export function ServicesTeaser({ site }: { site?: SiteContent }) {
+  const block = site?.content?.services;
+  const items: ServiceItem[] = block?.data?.items || [];
+  if (items.length === 0) return null;
+
+  return (
+    <section className="bg-IcyBreeze dark:bg-darklight">
+      <div className="container">
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <p className="text-primary font-bold uppercase tracking-wide text-sm mb-2">
+            {block?.data?.eyebrow || "The Audio Visual Company"}
+          </p>
+          <h2>{block?.title || "What We Do"}</h2>
+          {block?.body && <p className="text-SlateBlueText mt-3">{block.body}</p>}
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+          {items.slice(0, 4).map((s, i) => (
+            <div
+              key={i}
+              data-aos="fade-up"
+              data-aos-delay={100 + i * 100}
+              className="rounded-22 bg-white dark:bg-darkmode shadow-round-box p-5 sm:p-6 text-center hover:-translate-y-1 transition-transform duration-300"
+            >
+              <span className="inline-flex w-12 h-12 items-center justify-center rounded-14 bg-primary/10 text-primary mb-3">
+                <Icon name={serviceIcon(s.icon)} size={24} />
+              </span>
+              <h3 className="font-bold text-secondary dark:text-white">{s.title}</h3>
+              {s.text && <p className="text-sm text-SlateBlueText mt-1">{s.text}</p>}
+            </div>
+          ))}
+        </div>
+
+        <div className="text-center">
+          <Link href="/services" className="btn_primary">See all services &amp; packages</Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** Content stores an icon *name*; fall back to a sensible default if it's unknown. */
+export function serviceIcon(name?: string): IconName {
+  const allowed: IconName[] = [
+    "camera", "video", "film", "drone", "radio", "headphones", "volume",
+    "heart", "image", "cast", "megaphone", "baby", "mic", "music", "users", "star",
+  ];
+  return allowed.includes(name as IconName) ? (name as IconName) : "camera";
 }

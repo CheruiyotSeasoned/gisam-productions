@@ -36,6 +36,30 @@ export interface ContentBlock {
   data: any;
 }
 
+/** One thing Big-Sam Production does — shown on the homepage teaser and /services. */
+export interface ServiceItem {
+  title: string;
+  text?: string;
+  /** An Icon name (see components/Icon.tsx); falls back to "camera" if unknown. */
+  icon?: string;
+}
+
+/** A bookable package, e.g. "Package A — KSh 30,000". */
+export interface PackageItem {
+  name: string;
+  /** Free text, so "KSh 30,000" and "KSh 200 each" both work. */
+  price: string;
+  /** Bullet list of what the client gets. */
+  includes: string[];
+}
+
+/** A named group of packages, e.g. "Wedding Coverage". */
+export interface PackageGroup {
+  name: string;
+  note?: string;
+  items: PackageItem[];
+}
+
 export interface Faq {
   id: number;
   question: string;
