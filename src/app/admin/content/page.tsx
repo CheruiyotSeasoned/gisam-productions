@@ -7,8 +7,9 @@ import { apiGet, apiPost } from "@/lib/api";
 import MediaLibrary from "@/components/Admin/MediaLibrary";
 import Branding from "@/components/Admin/Branding";
 import SiteImages from "@/components/Admin/SiteImages";
+import Moments from "@/components/Admin/Moments";
 
-type Tab = "blocks" | "images" | "faqs" | "media" | "branding";
+type Tab = "blocks" | "images" | "moments" | "faqs" | "media" | "branding";
 
 export default function AdminContent() {
   return <AdminShell>{() => <ContentBody />}</AdminShell>;
@@ -20,6 +21,7 @@ function ContentBody() {
   const tabs: { id: Tab; label: string }[] = [
     { id: "blocks", label: "Page content" },
     { id: "images", label: "Site Images" },
+    { id: "moments", label: "Moments (TikTok)" },
     { id: "faqs", label: "FAQs" },
     { id: "media", label: "Media library" },
     { id: "branding", label: "Logo & Branding" },
@@ -27,13 +29,17 @@ function ContentBody() {
   return (
     <div className="space-y-4">
       {toast && <Toast msg={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
-      <div className="flex gap-2 flex-wrap">
-        {tabs.map((t) => (
-          <button key={t.id} onClick={() => setTab(t.id)} className={`px-4 py-2 rounded-lg text-sm ${tab === t.id ? "bg-primary text-white" : "bg-white border"}`}>{t.label}</button>
-        ))}
+      {/* Tabs scroll sideways on a phone instead of wrapping into a tall stack. */}
+      <div className="-mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto">
+        <div className="flex gap-2 w-max md:w-auto md:flex-wrap">
+          {tabs.map((t) => (
+            <button key={t.id} onClick={() => setTab(t.id)} className={`px-4 py-2 rounded-lg text-sm whitespace-nowrap ${tab === t.id ? "bg-primary text-white" : "bg-white border"}`}>{t.label}</button>
+          ))}
+        </div>
       </div>
       {tab === "blocks" && <Blocks notify={setToast} />}
       {tab === "images" && <SiteImages notify={setToast} />}
+      {tab === "moments" && <Moments notify={setToast} />}
       {tab === "faqs" && <Faqs notify={setToast} />}
       {tab === "media" && <Card className="p-5"><MediaLibrary notify={setToast} /></Card>}
       {tab === "branding" && <Branding notify={setToast} />}

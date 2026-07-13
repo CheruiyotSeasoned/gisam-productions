@@ -80,37 +80,62 @@ const config: Config = {
         '3': '3',
       },      
       colors: {
-        primary: "#2F73F2",
-        secondary: "#102C46",
-        SereneSky: "#8FACC6",
-        ElectricAqua: "#46C4FF",
-        RegalBlue: "#13439B",
-        LightYellow: "#FFE15A",
-        IcyBreeze: "#EFFBFF",
-        PaleCyan: "#CFF4FF",
-        Aquamarine: "#7DF9C2",
-        MidnightNavyText: "#102D47",
-        SlateBlueText : "#547593",
-        PaleSkyBlu: "#E0F7FF",
-        MistyTealText: "#6F9DAC",
+        /**
+         * Big-Sam brand: white · black · red.
+         * The legacy token names are kept (components reference them widely) but
+         * every value now maps onto the three-colour system — red for action,
+         * near-black for ink/surfaces, neutral greys for support.
+         */
+        primary: "#E11D2E",        // signature red — CTAs, accents, active states
+        primaryDark: "#B3111F",    // red hover/pressed
+        primarySoft: "#FDECEE",    // red 5% tint — soft fills
+        secondary: "#0B0B0F",      // near-black — headings, dark surfaces
+        ink: "#0B0B0F",
+        SereneSky: "#D6D6DB",      // silver (2nd place)
+        ElectricAqua: "#E11D2E",
+        RegalBlue: "#B3111F",
+        LightYellow: "#F3F3F4",
+        IcyBreeze: "#F6F6F7",      // light neutral section background
+        PaleCyan: "#FDECEE",
+        Aquamarine: "#FDECEE",
+        MidnightNavyText: "#0B0B0F",
+        SlateBlueText: "#5C5C66",  // body copy grey
+        PaleSkyBlu: "#FAFAFA",
+        MistyTealText: "#8A8A94",  // muted label grey
         OliveDrab: "#73713C",
-        CadetBlue: "#879AAC",
-        Dandelion: "#F2EC1D",
-        SkyBlueMist: "#C0D5FB",
-        LightSkyBlue: "#B2D5EA",
+        CadetBlue: "#8A8A94",
+        Dandelion: "#E11D2E",
+        SkyBlueMist: "#E6E6E9",
+        LightSkyBlue: "#D6D6DB",
         Salem: "#1C7C52",
         YellowRating: "#FAB446",
-        PaleCerulean: "#A3BBD1",
-        PeriwinkleBorder:"#C0D5FB",
-        LightBlueBorder: "#4F8BFB",
-        OceanDepthsDarkBorder: "#224767",
-        PowderBlueBorder: "#E1F1F6",
-        darkLineColor: "#24497c",
-        darkmode: "#011120",
-        darklight: "#0d1a2c",
-        darktext: "#7F8487",
-        dark_border: "#224767",
-        dark_input: "#1B2430",
+        PaleCerulean: "#C7C7CE",
+        PeriwinkleBorder: "#E6E6E9",
+        LightBlueBorder: "#E11D2E",
+        OceanDepthsDarkBorder: "#26262C",
+        PowderBlueBorder: "#E6E6E9",
+        darkLineColor: "#26262C",
+        darkmode: "#0A0A0B",       // dark surface
+        darklight: "#151517",
+        darktext: "#8A8A94",
+        dark_border: "#26262C",
+        dark_input: "#151517",
+      },
+      keyframes: {
+        /* Mobile wordmark: audio-equalizer bars that pulse like a live meter. */
+        eq: {
+          "0%, 100%": { transform: "scaleY(0.35)" },
+          "50%": { transform: "scaleY(1)" },
+        },
+        /* Red sweep across the wordmark, like a stage light passing over it. */
+        sheen: {
+          "0%": { backgroundPosition: "200% 0" },
+          "100%": { backgroundPosition: "-200% 0" },
+        },
+      },
+      animation: {
+        eq: "eq 1s ease-in-out infinite",
+        sheen: "sheen 4s linear infinite",
       },
       fontSize: {
         58: [

@@ -50,14 +50,14 @@ function SponsorsBody() {
           <div className="px-5 py-3 border-b font-semibold text-secondary">Inquiries</div>
           <div className="divide-y">
             {inquiries.map((q: any) => (
-              <div key={q.id} className="p-4 flex justify-between gap-4">
-                <div>
+              <div key={q.id} className="p-4 flex flex-col sm:flex-row sm:justify-between gap-3">
+                <div className="min-w-0">
                   <div className="font-semibold text-secondary">{q.company}</div>
-                  <div className="text-sm text-slate-500">{q.contact_person} · {q.phone}{q.email ? ` · ${q.email}` : ""}</div>
+                  <div className="text-sm text-slate-500 break-words">{q.contact_person} · {q.phone}{q.email ? ` · ${q.email}` : ""}</div>
                   {q.tier && <div className="text-xs text-primary mt-0.5">Tier: {q.tier}</div>}
                   {q.message && <div className="text-sm text-slate-400 mt-1">{q.message}</div>}
                 </div>
-                <select value={q.status} onChange={(e) => setInquiryStatus(q.id, e.target.value)} className="border rounded-lg px-2 py-1 text-sm h-9">
+                <select value={q.status} onChange={(e) => setInquiryStatus(q.id, e.target.value)} className="border rounded-lg px-2 py-1 text-sm h-9 w-full sm:w-auto shrink-0">
                   {statuses.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>

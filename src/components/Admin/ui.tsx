@@ -14,12 +14,12 @@ export function statusLabel(s: string): string {
 export function StatusBadge({ status }: { status: string }) {
   const cls =
     ["paid", "confirmed", "top_20"].includes(status) ? "bg-green-100 text-green-700" :
-    ["pending_payment", "pending", "new"].includes(status) ? "bg-yellow-100 text-yellow-800" :
+    ["pending_payment", "pending", "new"].includes(status) ? "bg-amber-100 text-amber-800" :
     ["payment_failed", "failed", "rejected", "declined", "cancelled"].includes(status) ? "bg-red-100 text-red-700" :
-    ["shortlisted", "contacted"].includes(status) ? "bg-blue-100 text-blue-700" :
-    ["winner_1", "winner_2", "winner_3"].includes(status) ? "bg-purple-100 text-purple-700" :
+    ["shortlisted", "contacted"].includes(status) ? "bg-secondary/10 text-secondary" :
+    ["winner_1", "winner_2", "winner_3"].includes(status) ? "bg-primary text-white" :
     "bg-slate-100 text-slate-600";
-  return <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${cls}`}>{statusLabel(status)}</span>;
+  return <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${cls}`}>{statusLabel(status)}</span>;
 }
 
 export function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {

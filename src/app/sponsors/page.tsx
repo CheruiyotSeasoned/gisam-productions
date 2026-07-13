@@ -98,8 +98,8 @@ export default function SponsorsPage() {
       </section>
 
       <style jsx global>{`
-        .sinput { width:100%; border-radius:.6rem; padding:.7rem .9rem; color:#102C46; outline:none; border:1px solid transparent; }
-        .sinput:focus { box-shadow:0 0 0 3px rgba(255,225,90,.4); }
+        .sinput { width:100%; border-radius:.6rem; padding:.7rem .9rem; color:#0B0B0F; outline:none; border:1px solid transparent; }
+        .sinput:focus { box-shadow:0 0 0 3px rgba(225,29,46,.35); }
       `}</style>
     </main>
   );

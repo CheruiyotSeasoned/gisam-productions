@@ -49,7 +49,7 @@ export default function RootLayout({
       <body className={dmsans.className}>
         <ThemeProvider attribute="class" enableSystem={true} defaultTheme="light">
           <Aoscompo>
-            <NextTopLoader color="#2F73F2" showSpinner={false} />
+            <NextTopLoader color="#E11D2E" showSpinner={false} />
             <ConditionalChrome>{children}</ConditionalChrome>
           </Aoscompo>
         </ThemeProvider>

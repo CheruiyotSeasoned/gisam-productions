@@ -56,15 +56,19 @@ function PaymentsBody({ user }: { user: AdminUser }) {
         <StatCard label="Cancelled" value={recon.cancelled?.count ?? 0} />
       </div>
 
-      <div className="flex gap-2">
-        {["", "paid", "pending", "failed", "cancelled"].map((s) => (
-          <button key={s} onClick={() => { setStatus(s); setPage(1); }} className={`px-3 py-1.5 rounded-lg text-sm ${status === s ? "bg-primary text-white" : "bg-white border"}`}>
-            {s === "" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
-          </button>
-        ))}
+      {/* Status filter — scrolls sideways on a phone rather than wrapping. */}
+      <div className="-mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto">
+        <div className="flex gap-2 w-max md:w-auto">
+          {["", "paid", "pending", "failed", "cancelled"].map((s) => (
+            <button key={s} onClick={() => { setStatus(s); setPage(1); }} className={`px-3 py-1.5 rounded-lg text-sm whitespace-nowrap ${status === s ? "bg-primary text-white" : "bg-white border"}`}>
+              {s === "" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <Card>
+      {/* Table — desktop */}
+      <Card className="hidden md:block">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="text-left text-slate-400 uppercase text-xs border-b">
@@ -96,8 +100,44 @@ function PaymentsBody({ user }: { user: AdminUser }) {
         </div>
       </Card>
 
+      {/* Cards — mobile */}
+      <div className="md:hidden space-y-2">
+        {rows.map((p: any) => (
+          <Card key={p.id} className="p-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="font-semibold text-secondary truncate">{p.full_name}</div>
+                <div className="text-xs text-slate-400">{p.reference}</div>
+              </div>
+              <StatusBadge status={p.status} />
+            </div>
+            <div className="flex items-center justify-between gap-2 mt-2 text-sm">
+              <span className="font-semibold text-secondary">{money(p.amount)}</span>
+              <span className="text-xs text-slate-500 truncate">
+                {p.method}{p.mpesa_receipt_number ? ` · ${p.mpesa_receipt_number}` : ""}
+              </span>
+            </div>
+            {p.status !== "paid" && (
+              <div className="flex gap-2 mt-3">
+                {user.role === "admin" && (
+                  <button onClick={() => setConfirmId(p.id)} className="flex-1 border border-green-600 text-green-700 rounded-lg py-1.5 text-xs font-semibold">
+                    Confirm paid
+                  </button>
+                )}
+                {p.checkout_request_id && (
+                  <button onClick={() => query(p.id)} className="flex-1 border rounded-lg py-1.5 text-xs text-slate-600">
+                    Query M-Pesa
+                  </button>
+                )}
+              </div>
+            )}
+          </Card>
+        ))}
+        {rows.length === 0 && <Card className="p-8 text-center text-slate-400 text-sm">No payments.</Card>}
+      </div>
+
       {d?.pages > 1 && (
-        <div className="flex gap-2 items-center text-sm justify-end">
+        <div className="flex gap-2 items-center text-sm justify-between sm:justify-end">
           <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="px-3 py-1.5 border rounded-lg disabled:opacity-40">Prev</button>
           <span>Page {page} / {d.pages}</span>
           <button disabled={page >= d.pages} onClick={() => setPage(page + 1)} className="px-3 py-1.5 border rounded-lg disabled:opacity-40">Next</button>
@@ -105,8 +145,8 @@ function PaymentsBody({ user }: { user: AdminUser }) {
       )}
 
       {confirmId != null && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40" onClick={() => setConfirmId(null)}>
-          <div className="bg-white rounded-xl p-6 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setConfirmId(null)}>
+          <div className="bg-white rounded-xl p-5 sm:p-6 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-bold text-secondary mb-2">Manually confirm payment</h3>
             <p className="text-sm text-slate-500 mb-3">Enter the M-Pesa receipt (optional) for a Paybill/manual payment.</p>
             <input value={receipt} onChange={(e) => setReceipt(e.target.value)} placeholder="e.g. SFE7X2Q9KL" className="w-full border rounded-lg px-3 py-2 mb-4" />

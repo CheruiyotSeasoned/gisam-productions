@@ -108,21 +108,21 @@ export default function Hero({ site }: { site: SiteContent }) {
             </div>
 
             {/* Floating prize card */}
-            <div className="absolute top-14 -right-5 bg-LightYellow rounded-22 shadow-hero-box py-3 px-5">
-              <p className="text-lg font-extrabold text-secondary flex items-center gap-2">
+            <div className="absolute top-14 -right-5 bg-primary rounded-22 shadow-hero-box py-3 px-5">
+              <p className="text-lg font-extrabold text-white flex items-center gap-2">
                 <Icon name="trophy" size={20} /> 1st Prize
               </p>
-              <p className="text-base font-semibold text-secondary text-center">
+              <p className="text-base font-semibold text-white text-center">
                 {s.fee_currency} {Number(s.prize_1).toLocaleString()}
               </p>
             </div>
 
             {/* Floating top-N card */}
-            <div className="absolute bottom-16 -right-4 bg-Aquamarine rounded-22 shadow-hero-box py-2.5 px-4 hidden xl:block">
-              <p className="text-base font-extrabold text-green-900 flex items-center gap-2">
-                <Icon name="star" size={18} /> Top {s.top_n_recruited}
+            <div className="absolute bottom-16 -right-4 bg-secondary rounded-22 shadow-hero-box py-2.5 px-4 hidden xl:block">
+              <p className="text-base font-extrabold text-white flex items-center gap-2">
+                <Icon name="star" size={18} className="text-primary" /> Top {s.top_n_recruited}
               </p>
-              <p className="text-xs font-semibold text-green-900 text-center">Join the team</p>
+              <p className="text-xs font-semibold text-white/70 text-center">Join the team</p>
             </div>
           </div>
 

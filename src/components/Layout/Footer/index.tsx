@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useSiteContent } from "@/lib/useSiteContent";
+import Wordmark from "@/components/BigSam/Wordmark";
 
 const Footer = () => {
   const { data } = useSiteContent();
@@ -18,7 +19,7 @@ const Footer = () => {
                 alt="Big-Sam Production"
                 className="h-12 w-12 rounded-lg object-cover"
               />
-              <span className="text-xl font-extrabold">BIG-SAM</span>
+              <Wordmark tone="dark" />
             </div>
             <p className="text-white/70 max-w-sm">
               {s?.event_tagline || "Discovering and nurturing Kenya's next generation of vocal talent."}

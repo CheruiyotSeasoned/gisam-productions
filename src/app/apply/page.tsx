@@ -228,13 +228,13 @@ export default function ApplyPage() {
       <style jsx global>{`
         .input {
           width: 100%;
-          border: 1px solid #C0D5FB;
+          border: 1px solid #E6E6E9;
           border-radius: 0.6rem;
           padding: 0.7rem 0.9rem;
           outline: none;
           background: #fff;
         }
-        .input:focus { border-color: #2F73F2; box-shadow: 0 0 0 3px rgba(47,115,242,.15); }
+        .input:focus { border-color: #E11D2E; box-shadow: 0 0 0 3px rgba(225,29,46,.15); }
       `}</style>
     </PageShell>
   );

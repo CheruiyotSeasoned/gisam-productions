@@ -14,7 +14,7 @@
     @apply !text-base;
 }
 .slick-dots li button:before{
-    @apply !text-blue-700;
+    @apply !text-secondary;
 }
 /*  */
 .year_slider .slick-list{

@@ -49,7 +49,7 @@ export default function AdminLogin() {
             <label className="block text-sm font-semibold text-slate-600 mb-1">Password</label>
             <input name="password" type="password" required className="w-full border border-slate-300 rounded-lg px-3 py-2.5 focus:border-primary outline-none" />
           </div>
-          <button disabled={loading} className="w-full bg-primary text-white font-semibold py-2.5 rounded-lg hover:bg-blue-700 disabled:opacity-60">
+          <button disabled={loading} className="w-full bg-primary text-white font-semibold py-2.5 rounded-lg hover:bg-primaryDark disabled:opacity-60">
             {loading ? "Signing in…" : "Sign in"}
           </button>
         </form>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { SiteContent } from "@/lib/types";
 import { apiGet } from "@/lib/api";
+import { tiktokId, tiktokEmbedUrl, type Moment } from "@/lib/tiktok";
 import Icon, { IconName } from "@/components/Icon";
 
 /* ------------------------------ Prizes ------------------------------ */
@@ -18,7 +19,8 @@ export function Prizes({ site }: { site: SiteContent }) {
   // Order for a visual podium: 2nd, 1st, 3rd
   const order = [podium[1], podium[0], podium[2]];
   const heights = ["h-40", "h-52", "h-32"];
-  const colors = ["bg-SereneSky", "bg-LightYellow", "bg-Aquamarine"];
+  const colors = ["bg-secondary", "bg-primary", "bg-SereneSky"];
+  const iconColors = ["text-white", "text-white", "text-secondary"];
   const icons: IconName[] = ["award", "trophy", "award"];
 
   return (
@@ -39,7 +41,7 @@ export function Prizes({ site }: { site: SiteContent }) {
                 </div>
               </div>
               <div className={`w-full ${heights[i]} ${colors[i]} rounded-t-xl flex items-start justify-center pt-4 shadow-inner`}>
-                <Icon name={icons[i]} size={i === 1 ? 40 : 32} className="text-secondary" />
+                <Icon name={icons[i]} size={i === 1 ? 40 : 32} className={iconColors[i]} />
               </div>
             </div>
           ))}
@@ -200,34 +202,51 @@ export function Faqs({ site }: { site: SiteContent }) {
   );
 }
 
-/* ----------------------------- Gallery ------------------------------ */
-const GALLERY_FALLBACK = [
-  "/images/ThumbnailSlider/Slider_1.png",
-  "/images/ThumbnailSlider/Slider_2.jpg",
-  "/images/ThumbnailSlider/Slider_3.png",
-  "/images/ThumbnailSlider/Slider_4.jpg",
-];
-export function Gallery({ site }: { site?: SiteContent }) {
-  const block = site?.content?.gallery;
-  const images: string[] = (block?.data?.images?.length ? block.data.images : GALLERY_FALLBACK);
-  if (images.length === 0) return null;
+/* ----------------------------- Moments ------------------------------ */
+/**
+ * "Moments from Big-Sam" — TikTok videos curated from Admin → CMS Content → Moments.
+ * Renders nothing until the team adds at least one embeddable video.
+ */
+export function Moments({ site }: { site?: SiteContent }) {
+  const block = site?.content?.moments;
+  const videos: Moment[] = block?.data?.videos || [];
+  const embeddable = videos.filter((v) => tiktokId(v.url));
+  if (embeddable.length === 0) return null;
+
   return (
     <section className="bg-white dark:bg-darkmode">
       <div className="container">
         <div className="text-center max-w-2xl mx-auto mb-10">
-          <p className="text-primary font-bold uppercase tracking-wide text-sm mb-2">On the stage</p>
+          <p className="text-primary font-bold uppercase tracking-wide text-sm mb-2 inline-flex items-center gap-2">
+            <Icon name="play" size={16} /> On the stage
+          </p>
           <h2>{block?.title || "Moments from Big-Sam"}</h2>
+          {block?.body && <p className="text-SlateBlueText mt-3">{block.body}</p>}
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {images.map((src, i) => (
-            <div
-              key={i}
-              data-aos="zoom-in"
+
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {embeddable.map((v, i) => (
+            <figure
+              key={`${v.url}-${i}`}
+              data-aos="fade-up"
               data-aos-delay={100 + i * 100}
-              className={`overflow-hidden rounded-22 shadow-round-box ${i % 2 === 0 ? "md:mt-0" : "md:mt-8"}`}
+              className="mx-auto w-full max-w-[325px]"
             >
-              <img src={src} alt="Big-Sam performance" className="w-full h-48 md:h-56 object-cover hover:scale-105 transition-transform duration-500" />
-            </div>
+              <div className="overflow-hidden rounded-22 shadow-round-box bg-secondary">
+                <iframe
+                  src={tiktokEmbedUrl(tiktokId(v.url)!)}
+                  title={v.caption || "Big-Sam TikTok moment"}
+                  loading="lazy"
+                  allow="encrypted-media; picture-in-picture; fullscreen"
+                  className="w-full h-[580px] border-0 block"
+                />
+              </div>
+              {v.caption && (
+                <figcaption className="text-sm text-SlateBlueText dark:text-white/60 mt-3 text-center">
+                  {v.caption}
+                </figcaption>
+              )}
+            </figure>
           ))}
         </div>
       </div>

@@ -51,7 +51,6 @@ export default function SiteImages({ notify }: { notify: (t: { msg: string; type
 
   const hero = blocks.hero?.data || {};
   const about = blocks.about?.data || {};
-  const gallery: string[] = blocks.gallery?.data?.images || [];
 
   return (
     <div className="space-y-4">
@@ -59,7 +58,7 @@ export default function SiteImages({ notify }: { notify: (t: { msg: string; type
         Manage the images shown across the public site. Uploads go to your Media library and are used immediately.
       </p>
 
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid sm:grid-cols-2 gap-4">
         <ImageSlot
           title="Hero — background"
           hint="The big stage/event image on the homepage hero."
@@ -83,36 +82,13 @@ export default function SiteImages({ notify }: { notify: (t: { msg: string; type
         />
       </div>
 
-      {/* Gallery (multiple) */}
-      <Card className="p-5">
-        <div className="flex justify-between items-center mb-3">
-          <div>
-            <div className="font-semibold text-secondary">Gallery — “Moments from Big-Sam”</div>
-            <div className="text-xs text-slate-400">Photos shown in the homepage gallery strip.</div>
-          </div>
-          <button
-            onClick={() => openPicker((url) => saveBlockData("gallery", (d) => ({ ...d, images: [ ...(d.images || []), url ] })))}
-            className="bg-primary text-white text-sm px-3 py-2 rounded-lg font-semibold"
-          >
-            + Add photo
-          </button>
-        </div>
-        {gallery.length === 0 ? (
-          <p className="text-sm text-slate-400">No gallery photos — the site shows default images until you add some.</p>
-        ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-            {gallery.map((url, i) => (
-              <div key={i} className="relative border rounded-lg overflow-hidden aspect-square bg-slate-100">
-                <img src={url} alt="" className="w-full h-full object-cover" />
-                <button
-                  onClick={() => saveBlockData("gallery", (d) => ({ ...d, images: (d.images || []).filter((_: string, j: number) => j !== i) }))}
-                  className="absolute top-1 right-1 bg-white/90 text-red-500 rounded-full w-6 h-6 text-xs"
-                  title="Remove"
-                >✕</button>
-              </div>
-            ))}
-          </div>
-        )}
+      {/* The old photo gallery strip is now the TikTok "Moments" section. */}
+      <Card className="p-4 sm:p-5">
+        <div className="font-semibold text-secondary">Moments — “Moments from Big-Sam”</div>
+        <p className="text-sm text-slate-500 mt-1">
+          This section now shows TikTok videos instead of photos. Manage it in the{" "}
+          <strong>Moments (TikTok)</strong> tab.
+        </p>
       </Card>
 
       <MediaPickerModal

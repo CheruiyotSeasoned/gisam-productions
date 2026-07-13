@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { headerData } from "../Header/Navigation/menuData";
 import { useSiteContent } from "@/lib/useSiteContent";
+import Wordmark from "@/components/BigSam/Wordmark";
 
 /**
  * Big-Sam public site header — clean nav + Apply CTA, mobile drawer.
@@ -42,15 +43,13 @@ const Header: React.FC = () => {
     >
       <div className="container">
         <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2" aria-label="Big-Sam Production home">
+          <Link href="/" className="flex items-center gap-2.5" aria-label="Big-Sam Production home">
             <img
               src={logo}
-              alt="Big-Sam Production"
-              className="h-11 w-11 rounded-lg object-cover shadow-sm"
+              alt=""
+              className="h-10 w-10 sm:h-11 sm:w-11 rounded-lg object-cover shadow-sm ring-1 ring-black/5"
             />
-            <span className="text-xl font-extrabold tracking-tight text-secondary hidden sm:inline">
-              BIG-SAM
-            </span>
+            <Wordmark />
           </Link>
 
           <ul className="hidden lg:flex items-center gap-7">
@@ -69,7 +68,7 @@ const Header: React.FC = () => {
           <div className="flex items-center gap-3">
             <Link
               href="/apply"
-              className="hidden sm:inline-block bg-primary text-white font-semibold px-5 py-2.5 rounded-lg hover:bg-blue-700 transition"
+              className="hidden sm:inline-block bg-primary text-white font-semibold px-5 py-2.5 rounded-lg hover:bg-primaryDark transition"
             >
               Apply Now
             </Link>
@@ -93,9 +92,9 @@ const Header: React.FC = () => {
           navbarOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div className="flex items-center justify-between p-4 border-b">
-          <span className="font-bold text-secondary">Menu</span>
-          <button onClick={() => setNavbarOpen(false)} aria-label="Close menu" className="text-2xl leading-none">&times;</button>
+        <div className="flex items-center justify-between p-4 border-b border-PowderBlueBorder">
+          <Wordmark tag="" />
+          <button onClick={() => setNavbarOpen(false)} aria-label="Close menu" className="text-2xl leading-none text-secondary">&times;</button>
         </div>
         <nav className="flex flex-col p-4 gap-1">
           {headerData.map((item, i) => (

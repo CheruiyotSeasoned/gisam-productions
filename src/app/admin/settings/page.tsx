@@ -158,15 +158,15 @@ function UserRow({ user, onSave }: { user: any; onSave: (u: any) => void }) {
   const [active, setActive] = useState(!!user.is_active);
   return (
     <div className="border rounded-lg p-3 space-y-2">
-      <div className="flex gap-2">
-        <input value={name} onChange={(e) => setName(e.target.value)} className="w-1/2 border rounded px-2 py-1.5 text-sm" />
-        <input value={email} onChange={(e) => setEmail(e.target.value)} className="w-1/2 border rounded px-2 py-1.5 text-sm" />
+      <div className="flex flex-col sm:flex-row gap-2">
+        <input value={name} onChange={(e) => setName(e.target.value)} className="w-full sm:w-1/2 border rounded px-2 py-1.5 text-sm" />
+        <input value={email} onChange={(e) => setEmail(e.target.value)} className="w-full sm:w-1/2 border rounded px-2 py-1.5 text-sm" />
       </div>
-      <div className="flex gap-2 items-center">
+      <div className="flex flex-wrap gap-2 items-center">
         <select value={role} onChange={(e) => setRole(e.target.value)} className="border rounded px-2 py-1.5 text-sm"><option value="reviewer">reviewer</option><option value="admin">admin</option></select>
-        <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="New password" className="flex-1 border rounded px-2 py-1.5 text-sm" />
+        <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="New password" className="flex-1 min-w-[10rem] border rounded px-2 py-1.5 text-sm" />
         <label className="text-sm flex items-center gap-1"><input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} /> Active</label>
-        <button onClick={() => onSave({ id: user.id, name, email, role, password, is_active: active ? 1 : 0 })} className="text-primary text-sm font-semibold">Save</button>
+        <button onClick={() => onSave({ id: user.id, name, email, role, password, is_active: active ? 1 : 0 })} className="text-primary text-sm font-semibold ml-auto">Save</button>
       </div>
     </div>
   );

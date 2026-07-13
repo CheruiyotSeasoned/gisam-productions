@@ -42,17 +42,17 @@ export default function LegalPage({
         .legal-prose h2 {
           font-size: 1.5rem;
           font-weight: 700;
-          color: #102D47;
+          color: #0B0B0F;
           margin: 2rem 0 0.75rem;
         }
         .legal-prose h3 {
           font-size: 1.15rem;
           font-weight: 700;
-          color: #102D47;
+          color: #0B0B0F;
           margin: 1.5rem 0 0.5rem;
         }
         .legal-prose p {
-          color: #547593;
+          color: #5C5C66;
           line-height: 1.75;
           margin-bottom: 1rem;
         }
@@ -60,18 +60,18 @@ export default function LegalPage({
           list-style: disc;
           padding-left: 1.4rem;
           margin-bottom: 1rem;
-          color: #547593;
+          color: #5C5C66;
         }
         .legal-prose ul li {
           margin-bottom: 0.4rem;
           line-height: 1.7;
         }
         .legal-prose a {
-          color: #2F73F2;
+          color: #E11D2E;
           text-decoration: underline;
         }
         .legal-prose strong {
-          color: #102D47;
+          color: #0B0B0F;
         }
         :root[class~="dark"] .legal-prose h2,
         :root[class~="dark"] .legal-prose h3,

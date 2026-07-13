@@ -74,7 +74,7 @@ function ApplicationsBody() {
 
       {/* Filters */}
       <Card className="p-4">
-        <div className="grid md:grid-cols-5 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2">
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name/phone/ref" className="border rounded-lg px-3 py-2 text-sm" />
           <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="border rounded-lg px-3 py-2 text-sm">
             <option value="">All statuses</option>
@@ -92,8 +92,8 @@ function ApplicationsBody() {
         </div>
       </Card>
 
-      {/* Table */}
-      <Card>
+      {/* Table — desktop */}
+      <Card className="hidden md:block">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="text-left text-slate-400 uppercase text-xs border-b">
@@ -121,14 +121,58 @@ function ApplicationsBody() {
         </div>
       </Card>
 
+      {/* Cards — mobile. A 7-column table can't be read on a phone, so each
+          applicant becomes a tappable card with the same fields stacked. */}
+      <div className="md:hidden space-y-2">
+        {rows.length > 0 && (
+          <label className="flex items-center gap-2 text-sm text-slate-500 px-1">
+            <input
+              type="checkbox"
+              checked={selected.length === rows.length}
+              onChange={(e) => setSelected(e.target.checked ? rows.map((r: any) => r.id) : [])}
+            />
+            Select all on this page
+          </label>
+        )}
+        {rows.map((r: any) => (
+          <Card key={r.id} className="p-3">
+            <div className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                checked={selected.includes(r.id)}
+                onChange={() => toggle(r.id)}
+                className="mt-1 shrink-0"
+                aria-label={`Select ${r.full_name}`}
+              />
+              <button
+                onClick={() => router.push(`/admin/applications?id=${r.id}`)}
+                className="flex-1 text-left min-w-0"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-semibold text-secondary truncate">{r.full_name}</span>
+                  <StatusBadge status={r.status} />
+                </div>
+                <div className="text-xs text-primary font-medium mt-0.5">{r.reference}</div>
+                <div className="text-xs text-slate-500 mt-1">
+                  {r.phone}{r.county ? ` · ${r.county}` : ""}
+                </div>
+              </button>
+            </div>
+          </Card>
+        ))}
+        {rows.length === 0 && (
+          <Card className="p-8 text-center text-slate-400 text-sm">No applications match.</Card>
+        )}
+      </div>
+
       {/* Bulk + pagination */}
-      <div className="flex justify-between items-center flex-wrap gap-3">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
         <div className="flex items-center gap-2">
-          <input value={bulkMsg} onChange={(e) => setBulkMsg(e.target.value)} placeholder={`Bulk SMS to ${selected.length} selected…`} className="border rounded-lg px-3 py-2 text-sm w-64" />
-          <button onClick={sendBulk} className="bg-primary text-white rounded-lg px-4 py-2 text-sm font-semibold">Send SMS</button>
+          <input value={bulkMsg} onChange={(e) => setBulkMsg(e.target.value)} placeholder={`Bulk SMS to ${selected.length} selected…`} className="border rounded-lg px-3 py-2 text-sm flex-1 sm:w-64 sm:flex-none" />
+          <button onClick={sendBulk} className="bg-primary text-white rounded-lg px-4 py-2 text-sm font-semibold whitespace-nowrap">Send SMS</button>
         </div>
         {list?.pages > 1 && (
-          <div className="flex gap-2 items-center text-sm">
+          <div className="flex gap-2 items-center justify-between sm:justify-end text-sm">
             <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="px-3 py-1.5 border rounded-lg disabled:opacity-40">Prev</button>
             <span>Page {page} / {list.pages}</span>
             <button disabled={page >= list.pages} onClick={() => setPage(page + 1)} className="px-3 py-1.5 border rounded-lg disabled:opacity-40">Next</button>
@@ -165,19 +209,19 @@ function DetailDrawer({ id, onClose, onSaved }: { id: string; onClose: () => voi
   const clipToken = getToken();
 
   return (
-    <div className="fixed inset-0 z-40 flex justify-end bg-black/40" onClick={onClose}>
-      <div className="w-full max-w-lg bg-white h-full overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex justify-end bg-black/40" onClick={onClose}>
+      <div className="w-full max-w-lg bg-white h-full overflow-y-auto p-4 sm:p-6" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-bold text-secondary">Application detail</h3>
-          <button onClick={onClose} className="text-2xl leading-none text-slate-400">×</button>
+          <button onClick={onClose} className="text-2xl leading-none text-slate-400 px-2">×</button>
         </div>
         {!a ? <div className="text-slate-400">Loading…</div> : (
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <div><div className="font-bold text-secondary text-lg">{a.full_name}</div><div className="text-sm text-slate-400">{a.reference}</div></div>
+            <div className="flex justify-between items-start gap-3">
+              <div className="min-w-0"><div className="font-bold text-secondary text-lg truncate">{a.full_name}</div><div className="text-sm text-slate-400">{a.reference}</div></div>
               <StatusBadge status={a.status} />
             </div>
-            <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="grid grid-cols-2 gap-3 text-sm">
               <Info k="Phone" v={a.phone} /><Info k="National ID" v={a.national_id || "—"} />
               <Info k="Email" v={a.email || "—"} /><Info k="County" v={a.county || "—"} />
               <Info k="Age / Gender" v={`${a.age || "—"} / ${a.gender || "—"}`} />
@@ -230,5 +274,5 @@ function DetailDrawer({ id, onClose, onSaved }: { id: string; onClose: () => voi
 }
 
 function Info({ k, v }: { k: string; v: any }) {
-  return <div><div className="text-xs text-slate-400">{k}</div><div className="font-medium text-secondary">{v}</div></div>;
+  return <div className="min-w-0"><div className="text-xs text-slate-400">{k}</div><div className="font-medium text-secondary break-words">{v}</div></div>;
 }

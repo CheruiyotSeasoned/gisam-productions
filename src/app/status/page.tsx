@@ -169,7 +169,7 @@ function StatusPill({ status, label }: { status: string; label: string }) {
     : status === "payment_failed" || status === "rejected"
     ? "bg-red-100 text-red-700"
     : status === "shortlisted"
-    ? "bg-blue-100 text-blue-700"
-    : "bg-yellow-100 text-yellow-800";
+    ? "bg-secondary/10 text-secondary"
+    : "bg-amber-100 text-amber-800";
   return <span className={`px-3 py-1 rounded-full text-sm font-semibold ${color}`}>{label || status}</span>;
 }
