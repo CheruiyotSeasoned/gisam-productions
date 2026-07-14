@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: `${siteName} 2026`,
     description:
-      "Sing your heart out. Win cash prizes and join the Big-Sam team. Auditions 15 August 2026.",
+      "One Minute One Mic. Win cash prizes and join the worship team/band. Auditions 15 August 2026.",
     type: "website",
     locale: "en_KE",
     images: [
