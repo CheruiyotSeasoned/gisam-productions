@@ -241,6 +241,7 @@ function DetailDrawer({ id, onClose, onSaved }: { id: string; onClose: () => voi
   const [d, setD] = useState<any>(null);
   const [status, setStatus] = useState("");
   const [notes, setNotes] = useState("");
+  const [notify, setNotify] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -251,11 +252,13 @@ function DetailDrawer({ id, onClose, onSaved }: { id: string; onClose: () => voi
 
   async function save() {
     setSaving(true);
-    await apiPost(`/api/admin/applications/${id}/status`, { status, admin_notes: notes }, true);
+    await apiPost(`/api/admin/applications/${id}/status`, { status, admin_notes: notes, notify }, true);
     setSaving(false);
     onSaved();
     onClose();
   }
+
+  const hasEmail = !!d?.applicant?.email;
 
   const a = d?.applicant;
   const clipToken = getToken();
@@ -314,6 +317,11 @@ function DetailDrawer({ id, onClose, onSaved }: { id: string; onClose: () => voi
               </select>
               <label className="block text-sm font-semibold text-secondary mb-1">Admin notes</label>
               <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className="w-full border rounded-lg px-3 py-2 mb-3" />
+              <label className={`flex items-center gap-2 text-sm mb-3 ${hasEmail ? "text-secondary" : "text-slate-400"}`}>
+                <input type="checkbox" checked={notify && hasEmail} disabled={!hasEmail} onChange={(e) => setNotify(e.target.checked)} />
+                Email the applicant this status update
+                {!hasEmail && <span className="text-xs">(no email on file)</span>}
+              </label>
               <button onClick={save} disabled={saving} className="w-full bg-primary text-white font-semibold py-2.5 rounded-lg disabled:opacity-60">
                 {saving ? "Saving…" : "Save"}
               </button>
