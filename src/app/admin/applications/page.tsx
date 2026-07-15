@@ -33,6 +33,9 @@ function ApplicationsBody() {
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<number[]>([]);
   const [bulkMsg, setBulkMsg] = useState("");
+  const [channel, setChannel] = useState<"sms" | "email" | "both">("sms");
+  const [bulkSubject, setBulkSubject] = useState("");
+  const [sending, setSending] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
 
   const load = useCallback(() => {
@@ -51,8 +54,12 @@ function ApplicationsBody() {
 
   async function sendBulk() {
     if (!selected.length || !bulkMsg.trim()) { setToast({ msg: "Select rows and type a message.", type: "error" }); return; }
-    const res = await apiPost("/api/admin/applications/bulk-notify", { ids: selected, message: bulkMsg }, true);
-    if (res.ok) { setToast({ msg: `Sent to ${res.data?.sent ?? 0} of ${res.data?.recipients ?? 0}.`, type: "success" }); setSelected([]); setBulkMsg(""); }
+    setSending(true);
+    const res = await apiPost("/api/admin/applications/bulk-notify", {
+      ids: selected, message: bulkMsg, channel, subject: bulkSubject,
+    }, true);
+    setSending(false);
+    if (res.ok) { setToast({ msg: res.message || "Sent.", type: "success" }); setSelected([]); setBulkMsg(""); setBulkSubject(""); }
     else setToast({ msg: res.message || "Failed.", type: "error" });
   }
 
@@ -165,20 +172,65 @@ function ApplicationsBody() {
         )}
       </div>
 
-      {/* Bulk + pagination */}
-      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
-        <div className="flex items-center gap-2">
-          <input value={bulkMsg} onChange={(e) => setBulkMsg(e.target.value)} placeholder={`Bulk SMS to ${selected.length} selected…`} className="border rounded-lg px-3 py-2 text-sm flex-1 sm:w-64 sm:flex-none" />
-          <button onClick={sendBulk} className="bg-primary text-white rounded-lg px-4 py-2 text-sm font-semibold whitespace-nowrap">Send SMS</button>
-        </div>
-        {list?.pages > 1 && (
-          <div className="flex gap-2 items-center justify-between sm:justify-end text-sm">
-            <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="px-3 py-1.5 border rounded-lg disabled:opacity-40">Prev</button>
-            <span>Page {page} / {list.pages}</span>
-            <button disabled={page >= list.pages} onClick={() => setPage(page + 1)} className="px-3 py-1.5 border rounded-lg disabled:opacity-40">Next</button>
+      {/* Bulk messaging */}
+      <Card className="p-4 space-y-3">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="font-semibold text-secondary text-sm">
+            Message {selected.length} selected {selected.length === 1 ? "applicant" : "applicants"}
           </div>
+          <div className="inline-flex rounded-lg border overflow-hidden text-sm">
+            {(["sms", "email", "both"] as const).map((c) => (
+              <button
+                key={c}
+                onClick={() => setChannel(c)}
+                className={`px-3 py-1.5 capitalize ${channel === c ? "bg-primary text-white" : "bg-white text-slate-600 hover:bg-slate-50"}`}
+              >
+                {c === "sms" ? "SMS" : c === "email" ? "Email" : "SMS + Email"}
+              </button>
+            ))}
+          </div>
+        </div>
+        {channel !== "sms" && (
+          <input
+            value={bulkSubject}
+            onChange={(e) => setBulkSubject(e.target.value)}
+            placeholder="Email subject (optional)"
+            className="border rounded-lg px-3 py-2 text-sm w-full"
+          />
         )}
-      </div>
+        <textarea
+          value={bulkMsg}
+          onChange={(e) => setBulkMsg(e.target.value)}
+          rows={3}
+          placeholder={channel === "email" ? "Email message…" : channel === "both" ? "Message (sent as SMS and email)…" : "SMS message…"}
+          className="border rounded-lg px-3 py-2 text-sm w-full"
+        />
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <p className="text-xs text-slate-400">
+            {channel === "sms"
+              ? "Sent by SMS to every selected applicant."
+              : channel === "email"
+                ? "Sent by email — applicants without an email on file are skipped."
+                : "SMS to all; email to those with an email on file."}
+          </p>
+          <button
+            onClick={sendBulk}
+            disabled={sending || !selected.length}
+            className="bg-primary text-white rounded-lg px-5 py-2 text-sm font-semibold whitespace-nowrap disabled:opacity-50"
+          >
+            {sending ? "Sending…" : channel === "sms" ? "Send SMS" : channel === "email" ? "Send Email" : "Send SMS + Email"}
+          </button>
+        </div>
+      </Card>
+
+      {/* Pagination */}
+      {list?.pages > 1 && (
+        <div className="flex gap-2 items-center justify-between sm:justify-end text-sm">
+          <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="px-3 py-1.5 border rounded-lg disabled:opacity-40">Prev</button>
+          <span>Page {page} / {list.pages}</span>
+          <button disabled={page >= list.pages} onClick={() => setPage(page + 1)} className="px-3 py-1.5 border rounded-lg disabled:opacity-40">Next</button>
+        </div>
+      )}
 
       {detailId && <DetailDrawer id={detailId} onClose={() => router.push("/admin/applications")} onSaved={() => { load(); setToast({ msg: "Application updated.", type: "success" }); }} />}
     </div>

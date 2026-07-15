@@ -74,6 +74,8 @@ function SettingsBody() {
 function SettingsForm({ notify }: { notify: (t: any) => void }) {
   const [grouped, setGrouped] = useState<Record<string, any[]>>({});
   const [values, setValues] = useState<Record<string, any>>({});
+  const [testTo, setTestTo] = useState("");
+  const [testing, setTesting] = useState(false);
 
   useEffect(() => {
     apiGet("/api/admin/settings", true).then((r) => {
@@ -93,6 +95,14 @@ function SettingsForm({ notify }: { notify: (t: any) => void }) {
     Object.entries(values).forEach(([k, v]) => { payload[k] = BOOLEAN_KEYS.includes(k) ? (v ? 1 : 0) : v; });
     const res = await apiPost("/api/admin/settings", payload, true);
     notify({ msg: res.ok ? "Settings saved." : (res.message || "Failed."), type: res.ok ? "success" : "error" });
+  }
+
+  async function sendTest() {
+    if (!testTo.trim()) { notify({ msg: "Enter an address to send the test to.", type: "error" }); return; }
+    setTesting(true);
+    const res = await apiPost("/api/admin/settings/test-email", { to: testTo.trim() }, true);
+    setTesting(false);
+    notify({ msg: res.message || (res.ok ? "Test email sent." : "Failed."), type: res.ok ? "success" : "error" });
   }
 
   return (
@@ -131,6 +141,30 @@ function SettingsForm({ notify }: { notify: (t: any) => void }) {
           </Card>
         ))}
       </div>
+
+      <Card className="p-5">
+        <div className="font-semibold text-secondary mb-1">Send a test email</div>
+        <p className="text-xs text-slate-400 mb-3">
+          Save your Email (SMTP) settings and switch them on first, then send a test to confirm delivery.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+          <input
+            type="email"
+            value={testTo}
+            onChange={(e) => setTestTo(e.target.value)}
+            placeholder="you@example.com"
+            className="border rounded-lg px-3 py-2 text-sm flex-1"
+          />
+          <button
+            onClick={sendTest}
+            disabled={testing}
+            className="border border-primary text-primary px-5 py-2 rounded-lg text-sm font-semibold whitespace-nowrap disabled:opacity-50"
+          >
+            {testing ? "Sending…" : "Send test"}
+          </button>
+        </div>
+      </Card>
+
       <button onClick={save} className="bg-primary text-white px-6 py-2.5 rounded-lg font-semibold">Save all settings</button>
     </div>
   );
