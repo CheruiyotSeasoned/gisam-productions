@@ -5,11 +5,11 @@ import AdminShell from "@/components/Admin/AdminShell";
 import { Card, Toast } from "@/components/Admin/ui";
 import { apiGet, apiPost } from "@/lib/api";
 
-const BOOLEAN_KEYS = ["application_open", "post_event_mode"];
+const BOOLEAN_KEYS = ["application_open", "post_event_mode", "mail_enabled"];
 const GROUP_LABELS: Record<string, string> = {
   event: "Event details", payment: "Payment & fees", application: "Application window",
   prizes: "Prizes", contact: "Contact & WhatsApp", general: "General", legal: "Legal",
-  mpesa: "M-Pesa (Daraja)",
+  mpesa: "M-Pesa (Daraja)", mail: "Email (SMTP)",
 };
 const SELECT_OPTIONS: Record<string, { value: string; label: string }[]> = {
   mpesa_env: [
@@ -20,8 +20,12 @@ const SELECT_OPTIONS: Record<string, { value: string; label: string }[]> = {
     { value: "CustomerPayBillOnline", label: "Paybill (CustomerPayBillOnline)" },
     { value: "CustomerBuyGoodsOnline", label: "Till / Buy Goods (CustomerBuyGoodsOnline)" },
   ],
+  mail_encryption: [
+    { value: "ssl", label: "SSL / TLS — port 465 (recommended)" },
+    { value: "tls", label: "STARTTLS — port 587" },
+  ],
 };
-const MPESA_HINTS: Record<string, string> = {
+const FIELD_HINTS: Record<string, string> = {
   mpesa_consumer_key: "From your Daraja app.",
   mpesa_consumer_secret: "Encrypted at rest. Leave blank to keep the current value.",
   mpesa_passkey: "Lipa na M-Pesa Online passkey. Encrypted; leave blank to keep.",
@@ -29,6 +33,13 @@ const MPESA_HINTS: Record<string, string> = {
   mpesa_till_number: "Buy Goods ONLY → your Till number. Leave blank for Paybill.",
   mpesa_callback_url: "Public HTTPS URL ending in /api/payments/callback.",
   mpesa_account_ref: "Account reference shown on the STK prompt.",
+  mail_enabled: "Turn on to send applicants a confirmation email when they provide one.",
+  mail_host: "Outgoing (SMTP) server, e.g. rs2.hpcnoc.com.",
+  mail_port: "465 for SSL/TLS (recommended), or 587 for STARTTLS.",
+  mail_username: "The full mailbox address, e.g. info@bigsamproduction.co.ke.",
+  mail_password: "The mailbox password. Encrypted at rest; leave blank to keep the current value.",
+  mail_from_address: "Address emails are sent from (usually the same as the username).",
+  mail_from_name: "Sender name applicants see, e.g. Big-Sam Production.",
 };
 
 export default function AdminSettings() {
@@ -94,7 +105,7 @@ function SettingsForm({ notify }: { notify: (t: any) => void }) {
               {rows.map((row) => (
                 <div key={row.key}>
                   <label className="block text-sm font-medium text-slate-600 capitalize mb-1">
-                    {row.key.replace(/^mpesa_/, "").replace(/_/g, " ")}
+                    {row.key.replace(/^(mpesa|mail)_/, "").replace(/_/g, " ")}
                     {row.secret && row.is_set && <span className="ml-2 text-xs text-green-600 font-normal">set ✓</span>}
                   </label>
                   {BOOLEAN_KEYS.includes(row.key) ? (
@@ -113,7 +124,7 @@ function SettingsForm({ notify }: { notify: (t: any) => void }) {
                   ) : (
                     <input value={values[row.key] ?? ""} onChange={(e) => setValues({ ...values, [row.key]: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm" />
                   )}
-                  {MPESA_HINTS[row.key] && <p className="text-xs text-slate-400 mt-1">{MPESA_HINTS[row.key]}</p>}
+                  {FIELD_HINTS[row.key] && <p className="text-xs text-slate-400 mt-1">{FIELD_HINTS[row.key]}</p>}
                 </div>
               ))}
             </div>
