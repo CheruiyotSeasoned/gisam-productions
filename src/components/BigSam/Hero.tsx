@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Countdown from "./Countdown";
+import EventImage from "./EventImage";
 import Icon from "@/components/Icon";
 import type { SiteContent } from "@/lib/types";
 
@@ -86,7 +87,7 @@ export default function Hero({ site }: { site: SiteContent }) {
           >
             {/* Main stage / crowd image */}
             <div className="relative rounded-tl-166 rounded-br-166 overflow-hidden shadow-hero-box aspect-[5/4]">
-              <img src={eventImg} alt="Live Big-Sam audition event" className="w-full h-full object-cover" />
+              <EventImage src={eventImg} alt="Live Big-Sam audition event" />
               <div className="absolute inset-0 bg-gradient-to-t from-secondary/70 via-secondary/10 to-transparent" />
 
               {/* Live badge */}
@@ -127,12 +128,23 @@ export default function Hero({ site }: { site: SiteContent }) {
           </div>
 
           {/* Mobile event image */}
-          <div className="lg:hidden relative rounded-22 overflow-hidden shadow-hero-box aspect-[16/10]" data-aos="fade-up">
-            <img src={eventImg} alt="Live Big-Sam audition event" className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-secondary/70 to-transparent" />
-            <div className="absolute top-4 left-4 flex items-center gap-2 bg-white/90 rounded-full py-1 px-3">
+          <div className="lg:hidden relative rounded-22 overflow-hidden shadow-hero-box aspect-[4/3] sm:aspect-[16/10]" data-aos="fade-up">
+            <EventImage src={eventImg} alt="Live Big-Sam audition event" />
+            <div className="absolute inset-0 bg-gradient-to-t from-secondary/80 via-secondary/20 to-transparent" />
+            <div className="absolute top-4 left-4 flex items-center gap-2 bg-white/90 backdrop-blur rounded-full py-1 px-3">
               <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
               <span className="text-xs font-bold text-secondary">Live Auditions</span>
+            </div>
+            {/* Caption + prize, so the mobile hero image carries real info too. */}
+            <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3 text-white">
+              <div>
+                <p className="text-base font-extrabold drop-shadow">{s.event_city}</p>
+                <p className="text-xs text-white/80">{formatDate(s.event_date)}</p>
+              </div>
+              <div className="bg-primary/95 rounded-xl py-1.5 px-3 shadow-hero-box text-center shrink-0">
+                <p className="text-[11px] font-bold text-white/80 leading-none uppercase tracking-wide">1st Prize</p>
+                <p className="text-sm font-extrabold text-white leading-tight">{s.fee_currency} {Number(s.prize_1).toLocaleString()}</p>
+              </div>
             </div>
           </div>
         </div>
