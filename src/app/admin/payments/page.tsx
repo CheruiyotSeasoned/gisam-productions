@@ -19,6 +19,12 @@ function PaymentsBody({ user }: { user: AdminUser }) {
   const [confirmId, setConfirmId] = useState<number | null>(null);
   const [receipt, setReceipt] = useState("");
 
+  // Prefill the receipt with the code the applicant pasted (manual Paybill).
+  function openConfirm(p: any) {
+    setReceipt(p.manual_code || "");
+    setConfirmId(p.id);
+  }
+
   const load = useCallback(() => {
     const qs = new URLSearchParams({ status, page: String(page) }).toString();
     apiGet(`/api/admin/payments?${qs}`, true).then((r) => r.ok && setD(r.data));
@@ -82,11 +88,15 @@ function PaymentsBody({ user }: { user: AdminUser }) {
                   <td className="px-4 py-2.5">{money(p.amount)}</td>
                   <td className="px-4 py-2.5 text-slate-500">{p.method}</td>
                   <td className="px-4 py-2.5"><StatusBadge status={p.status} /></td>
-                  <td className="px-4 py-2.5 text-slate-500">{p.mpesa_receipt_number || "—"}</td>
+                  <td className="px-4 py-2.5 text-slate-500">
+                    {p.mpesa_receipt_number || (p.manual_code
+                      ? <span className="text-amber-700">{p.manual_code} <span className="text-[10px] uppercase">unverified</span></span>
+                      : "—")}
+                  </td>
                   <td className="px-4 py-2.5">
                     {p.status !== "paid" && (
                       <div className="flex gap-2">
-                        {user.role === "admin" && <button onClick={() => setConfirmId(p.id)} className="text-green-600 text-xs font-semibold">Confirm</button>}
+                        {user.role === "admin" && <button onClick={() => openConfirm(p)} className="text-green-600 text-xs font-semibold">Confirm</button>}
                         {p.checkout_request_id && <button onClick={() => query(p.id)} className="text-slate-500 text-xs">Query</button>}
                       </div>
                     )}
@@ -114,13 +124,13 @@ function PaymentsBody({ user }: { user: AdminUser }) {
             <div className="flex items-center justify-between gap-2 mt-2 text-sm">
               <span className="font-semibold text-secondary">{money(p.amount)}</span>
               <span className="text-xs text-slate-500 truncate">
-                {p.method}{p.mpesa_receipt_number ? ` · ${p.mpesa_receipt_number}` : ""}
+                {p.method}{p.mpesa_receipt_number ? ` · ${p.mpesa_receipt_number}` : (p.manual_code ? ` · ${p.manual_code} (unverified)` : "")}
               </span>
             </div>
             {p.status !== "paid" && (
               <div className="flex gap-2 mt-3">
                 {user.role === "admin" && (
-                  <button onClick={() => setConfirmId(p.id)} className="flex-1 border border-green-600 text-green-700 rounded-lg py-1.5 text-xs font-semibold">
+                  <button onClick={() => openConfirm(p)} className="flex-1 border border-green-600 text-green-700 rounded-lg py-1.5 text-xs font-semibold">
                     Confirm paid
                   </button>
                 )}
@@ -148,8 +158,8 @@ function PaymentsBody({ user }: { user: AdminUser }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setConfirmId(null)}>
           <div className="bg-white rounded-xl p-5 sm:p-6 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-bold text-secondary mb-2">Manually confirm payment</h3>
-            <p className="text-sm text-slate-500 mb-3">Enter the M-Pesa receipt (optional) for a Paybill/manual payment.</p>
-            <input value={receipt} onChange={(e) => setReceipt(e.target.value)} placeholder="e.g. SFE7X2Q9KL" className="w-full border rounded-lg px-3 py-2 mb-4" />
+            <p className="text-sm text-slate-500 mb-3">Verify the M-Pesa code against your Paybill statement, then confirm. The applicant&apos;s pasted code is prefilled below.</p>
+            <input value={receipt} onChange={(e) => setReceipt(e.target.value)} placeholder="e.g. SFE7X2Q9KL" className="w-full border rounded-lg px-3 py-2 mb-4 font-mono uppercase" />
             <div className="flex gap-2 justify-end">
               <button onClick={() => setConfirmId(null)} className="px-4 py-2 border rounded-lg text-sm">Cancel</button>
               <button onClick={confirmPayment} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold">Confirm paid</button>

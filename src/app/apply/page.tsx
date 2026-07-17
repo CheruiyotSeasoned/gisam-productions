@@ -6,7 +6,14 @@ import { useSiteContent } from "@/lib/useSiteContent";
 import { apiPostForm, apiGet, apiPost } from "@/lib/api";
 import Icon from "@/components/Icon";
 
-type Phase = "form" | "paying" | "success" | "failed";
+type Phase = "form" | "paying" | "manual" | "success" | "failed";
+
+type ManualPay = {
+  paybill: string;
+  account: string;
+  business_name: string;
+  amount: number;
+};
 
 const COUNTIES = [
   "Nairobi","Mombasa","Kisumu","Nakuru","Uasin Gishu","Kiambu","Machakos","Kakamega",
@@ -22,6 +29,7 @@ export default function ApplyPage() {
   const [reference, setReference] = useState<string>("");
   const [statusMsg, setStatusMsg] = useState("Sending payment request…");
   const [clipMode, setClipMode] = useState<"link" | "upload">("link");
+  const [manualPay, setManualPay] = useState<ManualPay | null>(null);
 
   // Money is involved, so don't rely on a disabled button alone: React state is
   // async, and a fast double-tap (or Enter held down) can fire submit twice before
@@ -84,15 +92,28 @@ export default function ApplyPage() {
 
     const ref = res.data?.reference;
     setReference(ref);
+    const pay = res.data?.payment;
 
-    if (res.data?.payment?.success) {
+    // Manual Paybill mode: show the details and collect the M-Pesa code.
+    if (pay?.mode === "manual") {
+      setManualPay({
+        paybill: pay.paybill || "",
+        account: pay.account || ref,
+        business_name: pay.business_name || "",
+        amount: pay.amount ?? Number(s?.fee_amount ?? 0),
+      });
+      setPhase("manual");
+      return;
+    }
+
+    if (pay?.success) {
       setPhase("paying");
-      setStatusMsg(res.data.payment.message || "Check your phone and enter your M-Pesa PIN.");
+      setStatusMsg(pay.message || "Check your phone and enter your M-Pesa PIN.");
       startPolling(ref);
     } else {
       // Application saved but STK didn't start (e.g. gateway not live yet).
       setPhase("failed");
-      setStatusMsg(res.data?.payment?.message || "We couldn't start the payment. You can retry below.");
+      setStatusMsg(pay?.message || "We couldn't start the payment. You can retry below.");
     }
   }
 
@@ -150,10 +171,40 @@ export default function ApplyPage() {
     }
   }
 
+  /** Manual Paybill: submit the M-Pesa code, then wait for admin confirmation. */
+  async function submitManualCode(code: string) {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setSubmitting(true);
+    try {
+      const res = await apiPost("/api/payments/manual-claim", { reference, code });
+      if (res.ok) {
+        setPhase("paying");
+        setStatusMsg(res.message || "Thanks! We received your code and will confirm your payment shortly.");
+        startPolling(reference);
+      } else {
+        setTopError(res.message || "Could not submit your code. Please check it and try again.");
+      }
+    } finally {
+      inFlight.current = false;
+      setSubmitting(false);
+    }
+  }
+
   // ---- Paying / success / failed screens ----
   if (phase !== "form") {
     return (
       <PageShell title="Your Application">
+        {phase === "manual" && manualPay ? (
+          <ManualPanel
+            pay={manualPay}
+            reference={reference}
+            currency={s?.fee_currency || "KSh"}
+            submitting={submitting}
+            topError={topError}
+            onSubmit={submitManualCode}
+          />
+        ) : (
         <div className="max-w-lg mx-auto bg-white rounded-2xl border border-PowderBlueBorder p-8 text-center">
           {phase === "paying" && (
             <>
@@ -194,6 +245,7 @@ export default function ApplyPage() {
             </>
           )}
         </div>
+        )}
       </PageShell>
     );
   }
@@ -266,7 +318,9 @@ export default function ApplyPage() {
           {submitting ? "Submitting…" : `Pay ${s?.fee_currency} ${s?.fee_amount} & Apply`}
         </button>
         <p className="text-center text-xs text-CadetBlue mt-3">
-          You&apos;ll receive an M-Pesa prompt on your phone to complete payment.
+          {s?.payment_mode === "manual"
+            ? "Next, you'll get M-Pesa Paybill details to pay and confirm."
+            : "You'll receive an M-Pesa prompt on your phone to complete payment."}
         </p>
       </form>
 
@@ -315,4 +369,91 @@ function Field({ label, name, type = "text", required = false, placeholder, min,
 function FieldError({ name, errors }: { name: string; errors: Record<string, string[]> }) {
   if (!errors?.[name]?.length) return null;
   return <p className="text-xs text-red-600 mt-1">{errors[name][0]}</p>;
+}
+
+/** Manual Paybill instructions + code capture (shown when payment_mode = manual). */
+function ManualPanel({ pay, reference, currency, submitting, topError, onSubmit }: {
+  pay: ManualPay;
+  reference: string;
+  currency: string;
+  submitting: boolean;
+  topError: string | null;
+  onSubmit: (code: string) => void;
+}) {
+  const [code, setCode] = useState("");
+  const [copied, setCopied] = useState<string | null>(null);
+
+  const copy = (label: string, value: string) => {
+    navigator.clipboard?.writeText(value).then(() => {
+      setCopied(label);
+      setTimeout(() => setCopied((c) => (c === label ? null : c)), 1500);
+    }).catch(() => {});
+  };
+
+  const amount = `${currency} ${Number(pay.amount).toLocaleString()}`;
+
+  return (
+    <div className="max-w-lg mx-auto space-y-4">
+      <div className="bg-white rounded-2xl border border-PowderBlueBorder p-6 md:p-8">
+        <div className="text-center mb-6">
+          <span className="inline-block bg-green-600 text-white text-xs font-bold tracking-wide uppercase px-3 py-1 rounded-full">M-Pesa Paybill</span>
+          <h3 className="text-xl font-bold text-secondary mt-3">Complete your payment</h3>
+          <p className="text-SlateBlueText text-sm mt-1">Pay <strong>{amount}</strong> using the details below, then paste your M-Pesa code.</p>
+        </div>
+
+        <div className="space-y-2">
+          <PayRow label="Business (Paybill) no." value={pay.paybill || "—"} onCopy={() => copy("paybill", pay.paybill)} copied={copied === "paybill"} big />
+          <PayRow label="Account no." value={pay.account || reference} onCopy={() => copy("account", pay.account || reference)} copied={copied === "account"} big />
+          <PayRow label="Amount" value={amount} onCopy={() => copy("amount", String(pay.amount))} copied={copied === "amount"} />
+          {pay.business_name && <PayRow label="Paying" value={pay.business_name} />}
+        </div>
+
+        <ol className="mt-6 text-sm text-SlateBlueText space-y-1.5 list-decimal list-inside">
+          <li>Open M-Pesa → <strong>Lipa na M-Pesa</strong> → <strong>Pay Bill</strong>.</li>
+          <li>Business no. and Account no. as shown above.</li>
+          <li>Enter amount <strong>{amount}</strong> and your PIN.</li>
+          <li>You&apos;ll get an M-Pesa SMS with a confirmation code (e.g. <span className="font-mono">SFE7X2Q9KL</span>).</li>
+        </ol>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-PowderBlueBorder p-6 md:p-8">
+        {topError && <div className="mb-4 rounded-lg bg-red-50 text-red-700 px-4 py-3 text-sm">{topError}</div>}
+        <label className="block text-sm font-semibold text-secondary mb-1.5">Paste your M-Pesa confirmation code</label>
+        <input
+          value={code}
+          onChange={(e) => setCode(e.target.value.toUpperCase())}
+          placeholder="e.g. SFE7X2Q9KL"
+          className="w-full border border-PeriwinkleBorder rounded-lg px-4 py-3 font-mono tracking-wide uppercase focus:border-primary outline-none"
+        />
+        <button
+          onClick={() => onSubmit(code.trim())}
+          disabled={submitting || code.trim().length < 8}
+          className="btn_primary w-full mt-4 disabled:opacity-50"
+        >
+          {submitting ? "Submitting…" : "I've paid — submit code"}
+        </button>
+        <p className="text-center text-xs text-CadetBlue mt-3">
+          Reference: <strong>{reference}</strong> · We&apos;ll verify and confirm your payment shortly.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function PayRow({ label, value, onCopy, copied, big }: {
+  label: string; value: string; onCopy?: () => void; copied?: boolean; big?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-lg bg-IcyBreeze px-4 py-3">
+      <div className="min-w-0">
+        <div className="text-xs text-CadetBlue">{label}</div>
+        <div className={`font-bold text-secondary ${big ? "text-xl tracking-wide" : "text-base"} truncate`}>{value}</div>
+      </div>
+      {onCopy && (
+        <button type="button" onClick={onCopy} className="shrink-0 text-xs font-semibold text-primary border border-primary rounded-lg px-3 py-1.5">
+          {copied ? "Copied" : "Copy"}
+        </button>
+      )}
+    </div>
+  );
 }

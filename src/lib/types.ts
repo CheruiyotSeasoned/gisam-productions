@@ -8,8 +8,10 @@ export interface SiteSettings {
   event_city: string;
   fee_amount: number;
   fee_currency: string;
+  payment_mode: "stk" | "manual";
   paybill_number: string;
   paybill_account: string;
+  paybill_business_name: string;
   till_number: string;
   application_open: boolean;
   application_deadline: string;
