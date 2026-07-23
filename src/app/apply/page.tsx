@@ -44,6 +44,7 @@ export default function ApplyPage() {
 
   const s = data?.settings;
   const gate = data?.app_open;
+  const isFree = s?.payment_mode === "free";
 
   if (loading) return <PageShell><div className="text-center py-20 text-SlateBlueText">Loading…</div></PageShell>;
 
@@ -93,6 +94,12 @@ export default function ApplyPage() {
     const ref = res.data?.reference;
     setReference(ref);
     const pay = res.data?.payment;
+
+    // Free entry: no payment — the applicant is confirmed immediately.
+    if (pay?.mode === "free") {
+      setPhase("success");
+      return;
+    }
 
     // Manual Paybill mode: show the details and collect the M-Pesa code.
     if (pay?.mode === "manual") {
@@ -221,7 +228,11 @@ export default function ApplyPage() {
             <>
               <Icon name="check-circle" size={64} className="mx-auto mb-4 text-green-500" />
               <h3 className="text-2xl font-bold text-secondary mb-2">You&apos;re in!</h3>
-              <p className="text-SlateBlueText">Your application and payment are confirmed. We&apos;ve sent an SMS with your reference.</p>
+              <p className="text-SlateBlueText">
+                {isFree
+                  ? "Your application is confirmed — no payment required. We've sent an SMS with your reference."
+                  : "Your application and payment are confirmed. We've sent an SMS with your reference."}
+              </p>
               <div className="mt-5 rounded-xl bg-IcyBreeze p-4">
                 <div className="text-sm text-SlateBlueText">Your reference number</div>
                 <div className="text-2xl font-extrabold text-primary">{reference}</div>
@@ -252,7 +263,10 @@ export default function ApplyPage() {
 
   // ---- Application form ----
   return (
-    <PageShell title="Apply to Audition" subtitle={`Application fee: ${s?.fee_currency} ${s?.fee_amount} • Paid via M-Pesa`}>
+    <PageShell
+      title="Apply to Audition"
+      subtitle={isFree ? "Free entry — no payment required" : `Application fee: ${s?.fee_currency} ${s?.fee_amount} • Paid via M-Pesa`}
+    >
       <form onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-white rounded-2xl border border-PowderBlueBorder p-6 md:p-8">
         {topError && <div className="mb-5 rounded-lg bg-red-50 text-red-700 px-4 py-3 text-sm">{topError}</div>}
 
@@ -315,10 +329,12 @@ export default function ApplyPage() {
         </label>
 
         <button disabled={submitting} className="btn_primary w-full mt-6 disabled:opacity-60">
-          {submitting ? "Submitting…" : `Pay ${s?.fee_currency} ${s?.fee_amount} & Apply`}
+          {submitting ? "Submitting…" : isFree ? "Submit application" : `Pay ${s?.fee_currency} ${s?.fee_amount} & Apply`}
         </button>
         <p className="text-center text-xs text-CadetBlue mt-3">
-          {s?.payment_mode === "manual"
+          {isFree
+            ? "No payment required — you'll be confirmed as soon as you submit."
+            : s?.payment_mode === "manual"
             ? "Next, you'll get M-Pesa Paybill details to pay and confirm."
             : "You'll receive an M-Pesa prompt on your phone to complete payment."}
         </p>

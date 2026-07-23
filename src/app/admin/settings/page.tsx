@@ -27,6 +27,7 @@ const SELECT_OPTIONS: Record<string, { value: string; label: string }[]> = {
   payment_mode: [
     { value: "stk", label: "M-Pesa STK push (needs Daraja API)" },
     { value: "manual", label: "Manual Paybill (applicant pastes code)" },
+    { value: "free", label: "Free entry (no payment)" },
   ],
 };
 const FIELD_HINTS: Record<string, string> = {
@@ -44,7 +45,7 @@ const FIELD_HINTS: Record<string, string> = {
   mail_password: "The mailbox password. Encrypted at rest; leave blank to keep the current value.",
   mail_from_address: "Address emails are sent from (usually the same as the username).",
   mail_from_name: "Sender name applicants see, e.g. Big-Sam Production.",
-  payment_mode: "STK sends a prompt to the phone (needs Daraja). Manual shows your Paybill and lets applicants paste their M-Pesa code for you to confirm.",
+  payment_mode: "STK sends a prompt to the phone (needs Daraja). Manual shows your Paybill and lets applicants paste their M-Pesa code for you to confirm. Free entry accepts applications with no payment at all.",
   paybill_number: "The Paybill number applicants pay to. For a bank, use the bank's Paybill (e.g. Equity 247247, KCB 522522).",
   paybill_account: "The account number applicants enter. For a bank Paybill, your bank account number (fixed for everyone). Leave blank to use each applicant's reference instead.",
   paybill_business_name: "Name applicants see when paying (e.g. your business or account name).",
