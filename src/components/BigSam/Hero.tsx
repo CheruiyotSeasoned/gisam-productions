@@ -22,6 +22,7 @@ export default function Hero({ site }: { site: SiteContent }) {
   const eventImg = hero?.data?.image || DEFAULT_EVENT_IMG;
   const portraitImg = hero?.data?.portrait || DEFAULT_PORTRAIT_IMG;
   const gateOpen = site.app_open?.open;
+  const isFree = s.payment_mode === "free";
 
   // A portrait upload is treated as a finished poster: the frame goes tall so it
   // shows big and uncropped on a branded backdrop. The cards stay, but the heavy
@@ -65,7 +66,7 @@ export default function Hero({ site }: { site: SiteContent }) {
               {gateOpen ? (
                 <Link href="/apply" className="btn btn-1 hover-filled-slide-down rounded-lg overflow-hidden">
                   <span className="!flex !items-center gap-2">
-                    <Icon name="music" size={20} /> Apply Now — {s.fee_currency} {s.fee_amount}
+                    <Icon name="music" size={20} /> {isFree ? "Apply Now — Free" : `Apply Now — ${s.fee_currency} ${s.fee_amount}`}
                   </span>
                 </Link>
               ) : (
@@ -192,7 +193,7 @@ export default function Hero({ site }: { site: SiteContent }) {
         >
           <span className="flex items-center gap-2"><Icon name="map-pin" size={18} className="text-primary" /> {s.event_venue}</span>
           <span className="flex items-center gap-2"><Icon name="calendar" size={18} className="text-primary" /> {formatDate(s.event_date)}</span>
-          <span className="flex items-center gap-2"><Icon name="ticket" size={18} className="text-primary" /> Entry fee {s.fee_currency} {s.fee_amount} via M-Pesa</span>
+          <span className="flex items-center gap-2"><Icon name="ticket" size={18} className="text-primary" /> {isFree ? "Free entry — no payment" : `Entry fee ${s.fee_currency} ${s.fee_amount} via M-Pesa`}</span>
         </div>
       </div>
     </section>
